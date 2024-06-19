@@ -1,0 +1,19 @@
+{
+    "child_private_keys": {
+      "address1": "EncryptedChildPrivateKey1...",
+      "address2": "EncryptedChildPrivateKey2...",
+    },
+    "public_keys": {
+      "address1": "PublicKey1...",
+      "address2": "PublicKey2...",
+    },
+    "addresses": [
+      "address1",
+      "address2",
+    ],
+    "metadata": {
+      "wallet_name": "My Wallet",
+      "creation_date": "2024-06-19",
+    }
+  }
+  

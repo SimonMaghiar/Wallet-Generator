@@ -4,6 +4,7 @@ use std::fs;
 use std::path::Path;
 mod recover_wallet;
 mod generate_wallet;
+mod store_wallet;
 use std::thread;
 
 fn handle_recover_wallet(socket_path: &str) -> std::io::Result<()> {
@@ -19,8 +20,12 @@ fn handle_recover_wallet(socket_path: &str) -> std::io::Result<()> {
                 let mut buffer = [0; 1024];
                 let bytes_read = socket.read(&mut buffer)?;
                 let response = std::str::from_utf8(&buffer[..bytes_read]).unwrap();
-                let public_key = recover_wallet::recover_wallet(response);
-                socket.write_all(public_key.as_bytes())?;
+                let succsess = recover_wallet::recover_wallet(response);
+                if succsess {
+                    socket.write_all(b"Success")?;
+                } else {
+                    socket.write_all(b"Error")?;
+                }
             },
             Err(e) => {
                 println!("Failed to accept client connection on {}: {}", socket_path, e);
@@ -45,12 +50,8 @@ fn handle_generate_wallet(socket_path: &str) -> std::io::Result<()> {
                 let response = std::str::from_utf8(&buffer[..bytes_read]).unwrap();
                 let recovery_length: u16 = response.to_string().parse().expect("Not a valid number");
                 if recovery_length == 12 || recovery_length == 24 {
-                    let (public_key, mnemonic) = generate_wallet::generate_wallet(recovery_length);
-                    let data = &[(hex::encode(public_key.to_bytes()) + " / ").as_bytes(), mnemonic.to_string().as_bytes()].join(&[0, 0][..]);
-                    socket.write_all(data)?;
-
-                    // println!("Public Key: 0x{}", hex::encode(public_key.to_bytes()));
-                    // println!("Mnemonic: {}", mnemonic.to_string());
+                    let mnemonic = generate_wallet::generate_wallet(recovery_length);
+                    socket.write_all(mnemonic.to_string().as_bytes())?;
                 }
             },
             Err(e) => {
